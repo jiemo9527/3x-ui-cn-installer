@@ -471,6 +471,16 @@ def patch_urls(path: Path, upstream: str, upstream_ref: str, target_raw_base: st
             '            fi',
         )
     text = apply_raw_rate_limit_fallbacks(text, upstream, upstream_ref, target_raw_base)
+    # Upstream is_port_in_use() bug: in awk, `exit 0` inside a rule still runs
+    # END {exit 1}, so a busy port (e.g. nginx on :80) was always reported free.
+    text = text.replace(
+        """awk -v p=":${port}$" '$4 ~ p {exit 0} END {exit 1}'""",
+        """awk -v p=":${port}$" '$4 ~ p {found=1; exit} END {exit !found}'""",
+    )
+    text = text.replace(
+        """awk -v p=":${port} " '$4 ~ p {exit 0} END {exit 1}'""",
+        """awk -v p=":${port}$" '$4 ~ p {found=1; exit} END {exit !found}'""",
+    )
     path.write_text(text, encoding="utf-8", newline="")
 
 
