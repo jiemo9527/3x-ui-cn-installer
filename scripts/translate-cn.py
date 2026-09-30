@@ -189,10 +189,37 @@ MENU_ITEMS = {
 }
 
 
+# Shell parameter expansions (${var}, ${var:-default}, $var) must never be
+# translated: the phrase "Port:" used to turn ${WebPort:-80} into an invalid
+# non-ASCII variable name, which bash rejects with "bad substitution".
+SHELL_VAR_RE = re.compile(r"\$\{[^}]*\}|\$[A-Za-z_][A-Za-z0-9_]*")
+PLACEHOLDER_RE = re.compile("\uE000(\\d+)\uE001")
+
+
+def _replace_phrase(text: str, source: str, target: str) -> str:
+    # Match whole words only, so "No" does not rewrite "Note" / "Non-interactive".
+    # A preceding \n / \t escape (as in echo -e "\nChoose ...") still counts as a boundary.
+    prefix = r"(?:(?<=\\[nt])|(?<![A-Za-z0-9_]))" if source[:1].isalnum() else ""
+    suffix = r"(?![A-Za-z0-9_])" if source[-1:].isalnum() else ""
+    return re.sub(prefix + re.escape(source) + suffix, lambda _m: target, text)
+
+
 def translate_text(text: str) -> str:
+    protected: list[str] = []
+
+    def _protect(match: re.Match[str]) -> str:
+        protected.append(match.group(0))
+        return f"\uE000{len(protected) - 1}\uE001"
+
+    translated = _translate_masked(SHELL_VAR_RE.sub(_protect, text))
+    return PLACEHOLDER_RE.sub(lambda m: protected[int(m.group(1))], translated)
+
+
+def _translate_masked(text: str) -> str:
     translated = text
-    for source, target in PHRASES:
-        translated = translated.replace(source, target)
+    # Longest phrases first so "Not Running" wins over "Running".
+    for source, target in sorted(PHRASES, key=lambda item: len(item[0]), reverse=True):
+        translated = _replace_phrase(translated, source, target)
 
     for source, target in MENU_ITEMS.items():
         translated = re.sub(rf"(?<![A-Za-z]){re.escape(source)}(?![A-Za-z])", target, translated)

@@ -86,6 +86,14 @@ curl -fsSL "https://api.github.com/repos/${RELEASE_REPO}/releases/latest" \
     | python3 -c 'import json,sys; data=json.load(sys.stdin); print(data["tag_name"])' \
     > upstream-version.txt
 
+for f in install-cn.sh x-ui-cn.sh; do
+    bash -n "$f"
+    if LC_ALL=C grep -nE '\$\{[^}]*[^ -~}][^}]*\}' "$f"; then
+        echo "Translation corrupted a shell variable expansion in $f" >&2
+        exit 1
+    fi
+done
+
 chmod +x install-cn.sh x-ui-cn.sh
 
 echo "Synced ${UPSTREAM_REPO}@${UPSTREAM_REF} into ${TARGET_REPO}@${TARGET_BRANCH}"

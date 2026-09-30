@@ -186,7 +186,7 @@ before_show_menu() {
 }
 
 install() {
-    run_github_script https://raw.githubusercontent.com/Fourgetu/3x-ui-cn-installer/main/install-cn.sh
+    run_github_script https://raw.githubusercontent.com/jiemo9527/3x-ui-cn-installer/main/install-cn.sh
     if [[ $? == 0 ]]; then
         if [[ $# == 0 ]]; then
             start
@@ -276,7 +276,7 @@ update_menu() {
         return 0
     fi
 
-    if replace_xui_script "https://raw.githubusercontent.com/Fourgetu/3x-ui-cn-installer/main/x-ui-cn.sh" "false"; then
+    if replace_xui_script "https://raw.githubusercontent.com/jiemo9527/3x-ui-cn-installer/main/x-ui-cn.sh" "false"; then
         chmod +x ${xui_folder}/x-ui.sh
         echo -e "${green}更新成功，面板已自动重启。${plain}"
         exit 0
@@ -295,7 +295,7 @@ legacy_version() {
         exit 1
     fi
     # Use the entered panel version in the download link
-    install_command="run_github_script https://raw.githubusercontent.com/Fourgetu/3x-ui-cn-installer/main/install-cn.sh v$tag_version"
+    install_command="run_github_script https://raw.githubusercontent.com/jiemo9527/3x-ui-cn-installer/main/install-cn.sh v$tag_version"
 
     echo "正在下载并安装面板版本 $tag_version..."
     eval $install_command
@@ -360,7 +360,7 @@ uninstall() {
     echo ""
     echo -e "卸载成功。\n"
     echo "如需重新安装面板，可以使用以下命令："
-    echo -e "${green}run_github_script https://raw.githubusercontent.com/Fourgetu/3x-ui-cn-installer/main/install-cn.sh${plain}"
+    echo -e "${green}run_github_script https://raw.githubusercontent.com/jiemo9527/3x-ui-cn-installer/main/install-cn.sh${plain}"
     echo ""
     # Trap the SIGTERM signal
     trap delete_script SIGTERM
@@ -893,7 +893,7 @@ enable_bbr() {
 }
 
 update_shell() {
-    if replace_xui_script "https://raw.githubusercontent.com/Fourgetu/3x-ui-cn-installer/main/x-ui-cn.sh" "true"; then
+    if replace_xui_script "https://raw.githubusercontent.com/jiemo9527/3x-ui-cn-installer/main/x-ui-cn.sh" "true"; then
         LOGI "Upgrade script succeeded, Please rerun the script"
         before_show_menu
     else
@@ -1003,7 +1003,7 @@ show_status() {
             show_enable_status
             ;;
         1)
-            echo -e "面板状态： ${yellow}否t 运行中${plain}"
+            echo -e "面板状态： ${yellow}未运行${plain}"
             show_enable_status
             ;;
         2)
@@ -1041,7 +1041,7 @@ show_xray_status() {
     if [[ $? == 0 ]]; then
         echo -e "xray 状态： ${green}运行中${plain}"
     else
-        echo -e "xray 状态： ${red}否t 运行中${plain}"
+        echo -e "xray 状态： ${red}未运行${plain}"
     fi
 }
 
@@ -1067,7 +1067,7 @@ show_mtproto_status() {
         if echo "${running}" | grep -qx "${name}"; then
             echo -e "mtproto inbound ${id} (${bind}): ${green}运行中${plain}"
         else
-            echo -e "mtproto inbound ${id} (${bind}): ${red}否t 运行中${plain}"
+            echo -e "mtproto inbound ${id} (${bind}): ${red}未运行${plain}"
         fi
     done
 }
@@ -1245,7 +1245,7 @@ delete_ports() {
         done
 
         # Confirmation of deletion
-        echo "删除d the specified ports:"
+        echo "Deleted the specified ports:"
         for port in "${PORT_LIST[@]}"; do
             if [[ $port == *-* ]]; then
                 start_port=$(echo $port | cut -d'-' -f1)
@@ -1417,7 +1417,7 @@ ssl_cert_issue_main() {
         2)
             local domains=$(find /root/cert/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2> /dev/null)
             if [ -z "$domains" ]; then
-                echo "否 certificates found to revoke."
+                echo "未找到证书 to revoke."
             else
                 echo "已有域名："
                 echo "$domains"
@@ -1458,7 +1458,7 @@ ssl_cert_issue_main() {
         3)
             local domains=$(find /root/cert/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2> /dev/null)
             if [ -z "$domains" ]; then
-                echo "否 certificates found to renew."
+                echo "未找到证书 to renew."
             else
                 echo "已有域名："
                 echo "$domains"
@@ -1475,7 +1475,7 @@ ssl_cert_issue_main() {
         4)
             local domains=$(find /root/cert/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2> /dev/null)
             if [ -z "$domains" ]; then
-                echo "否 certificates found under /root/cert."
+                echo "未找到证书 under /root/cert."
             else
                 echo "Existing domains and their paths:"
                 for domain in $domains; do
@@ -1524,7 +1524,7 @@ ssl_cert_issue_main() {
             fi
             local domains=$(find /root/cert/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \; 2> /dev/null)
             if [ -z "$domains" ]; then
-                echo "否 certificates found."
+                echo "未找到证书."
             else
                 echo "Available domains:"
                 echo "$domains"
@@ -1683,7 +1683,7 @@ ssl_cert_issue_for_ip() {
     # Choose port for HTTP-01 listener (default 80, allow override)
     local WebPort=""
     read -rp "Port to use for ACME HTTP-01 listener (default 80): " WebPort
-    WebPort="${Web端口：-80}"
+    WebPort="${WebPort:-80}"
     if ! [[ "${WebPort}" =~ ^[0-9]+$ ]] || ((WebPort < 1 || WebPort > 65535)); then
         LOGE "Invalid port provided. Falling back to 80."
         WebPort=80
@@ -1743,7 +1743,7 @@ ssl_cert_issue_for_ip() {
     fi
 
     # 安装 the certificate
-    # 否te: acme.sh may report "Reload error" and exit non-zero if reloadcmd fails,
+    # Note: acme.sh may report "Reload error" and exit non-zero if reloadcmd fails,
     # but the cert files are still installed. We check for files instead of exit code.
     ~/.acme.sh/acme.sh --installcert --force -d ${server_ip} \
         --key-file "${certPath}/privkey.pem" \
@@ -2491,7 +2491,7 @@ remove_iplimit() {
                     exit 1
                     ;;
             esac
-            echo -e "${green}Fail2ban 和 IP 限制 removed successfully!${plain}\n"
+            echo -e "${green}Fail2ban and IP 限制移除成功！${plain}\n"
             before_show_menu
             ;;
         0)
@@ -2783,7 +2783,7 @@ postgresql_status() {
             echo -e "${green}PostgreSQL is listening on port 5432:${plain}"
             echo "$listening"
         else
-            echo -e "${red}否thing is listening on port 5432 - the database is not running.${plain}"
+            echo -e "${red}Nothing is listening on port 5432 - the database is not running.${plain}"
         fi
     fi
 }
@@ -3103,7 +3103,7 @@ pg_upgrade_client() {
         LOGI "Installed PostgreSQL client tools are version ${have}; version ${want} or newer is required."
     fi
     if [[ "${running_in_docker}" == "true" ]]; then
-        LOGI "否te: packages installed inside the container are lost when the container is recreated."
+        LOGI "Note: packages installed inside the container are lost when the container is recreated."
     fi
     case "${release}" in
         ubuntu | debian | armbian)
